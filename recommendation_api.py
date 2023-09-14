@@ -8,6 +8,7 @@ import argparse
 from pathlib import Path
 import os
 
+project_folder = Path(__file__).parent.resolve()
 
 parser = argparse.ArgumentParser(
     prog="recommendation_api.py",
@@ -38,7 +39,7 @@ def load_recommendation_engine(path=None):
         return npz["cos_sims"], pd.DataFrame(npz["books"], columns=["id", "title"])
 
 
-cos_sims, books = load_recommendation_engine(args.path)
+cos_sims, books = load_recommendation_engine(os.path.join(project_folder, args.path))
 
 
 # takes the id of book (int) or title of book (string) as query
@@ -88,7 +89,7 @@ def recommender(query, n_recommendations, offset):
 app = Flask(__name__)
 
 
-# currently redirecting to the docs. beacause currenlty we don't have landing page.
+# redirecting the request to the docs path if user request for root path.
 @app.route("/")
 def root_path():
     return redirect("/docs")
