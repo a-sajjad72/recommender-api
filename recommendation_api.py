@@ -127,9 +127,11 @@ def get_books():
         more_similar = []
         for x in results:
             if x[1] >= 60:
-                more_similar.append([books.id[x[2]], x[0]])
+                # more_similar.append([books.id[x[2]], x[0]])
+                more_similar.append(books.id[x[2]])
             else:
-                less_similar.append([books.id[x[2]], x[0]])
+                # less_similar.append([books.id[x[2]], x[0]])
+                less_similar.append(books.id[x[2]])
         return jsonify({"moreSimilar": more_similar, "lessSimilar": less_similar})
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
