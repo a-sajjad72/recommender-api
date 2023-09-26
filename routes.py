@@ -147,11 +147,11 @@ def get_books_by_name():
 
         for x in results:
             if x[1] >= 60:
-                more_similar.append([books._id[x[2]], x[0]])
-                # more_similar.append(books._id[x[2]])
+                # more_similar.append([books._id[x[2]], x[0]])
+                more_similar.append(books._id[x[2]])
             else:
-                less_similar.append([books._id[x[2]], x[0]])
-                # less_similar.append(books._id[x[2]])
+                # less_similar.append([books._id[x[2]], x[0]])
+                less_similar.append(books._id[x[2]])
 
         return jsonify({"moreSimilar": more_similar, "lessSimilar": less_similar})
 

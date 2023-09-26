@@ -25,5 +25,5 @@ def recommender(query, n_recommendations, offset):
     sim_scores = sim_scores[offset:(n_recommendations)]
     similar_books = [i[0] for i in sim_scores]
     
-    return books[["_id", "title"]].iloc[similar_books].to_dict(orient="records")
-    # return books["_id"].iloc[similar_books].to_dict(orient="records")
+    # return books[["_id", "title"]].iloc[similar_books].to_dict(orient="records")
+    return books["_id"].iloc[similar_books].to_dict(orient="records")
