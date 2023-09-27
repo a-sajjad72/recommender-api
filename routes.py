@@ -191,7 +191,7 @@ def get_recommendations():
     book_id = request.args.get("id", type=int)
     offset = request.args.get("offset", default=0, type=int)
     n_recs = request.args.get("n_recs", default=10, type=int)
-
+    print(book_title)
     if offset >= books.shape[0] or offset < 0:
         return (
             jsonify(
@@ -201,7 +201,7 @@ def get_recommendations():
         )
 
     if n_recs < 1:
-        return jsonify({"error": "Invalid value for n_books"}), 400
+        n_recs = 10
 
     if not (book_title or book_id):
         return jsonify({"error": "either name or id is required"}), 400
