@@ -29,7 +29,7 @@ def get_books_by_genres():
     """
     API endpoint for searching books by genres.
     """
-    genre_names = [request.args.get(f"name[{i}]") for i in range(1, 3)]
+    genre_names = request.args.getlist("name[]")
     n_books = request.args.get("n_books", type=int, default=10)
     offset = request.args.get("offset", type=int, default=0)
 
@@ -73,10 +73,10 @@ def get_books_by_authors():
     """
     API endpoint for searching books by authors.
     """
-    author_names = [request.args.get(f"name[{i}]") for i in range(1, 3)]
+    author_names = request.args.getlist("name[]")
     n_books = request.args.get("n_books", type=int, default=10)
     offset = request.args.get("offset", type=int, default=0)
-
+    print(author_names)
     if not author_names:
         return jsonify({"error": "name is required"}), 400
 
