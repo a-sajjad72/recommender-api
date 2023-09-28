@@ -27,7 +27,7 @@ def load_recommendation_engine(path=None):
 cos_sims, books = load_recommendation_engine(
     os.path.join(
         project_folder,
-        "__pycache__",
+        "recommendation_engine_data",
         "recommender_engine.npz",
     )
 )
