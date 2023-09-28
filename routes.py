@@ -34,21 +34,28 @@ def get_books_by_genres():
     offset = request.args.get("offset", type=int, default=0)
 
     if not genre_names:
-        return jsonify({"error": "name is required"}), 400
-
-    if n_books < 1:
-        return jsonify({"error": "Invalid value for n_books"}), 400
-
-    try:
-        return jsonify(genre_search(genre_names, n_books + offset, offset))
-    except IndexError as e:
         return (
             jsonify(
-                {
-                    "error": {
-                        "name": type(e).__name__,
-                        "message": str(e),
-                    }
+                error={
+                    "name": "QueryParameterError",
+                    "message": "name is required",
+                }
+            ),
+            400,
+        )
+
+    if n_books < 1:
+        n_books = 10
+
+    try:
+        totalResults, results = genre_search(genre_names, n_books + offset, offset)
+        return jsonify(totalResults=totalResults, results=results)
+    except (IndexError, ValueError) as e:
+        return (
+            jsonify(
+                error={
+                    "name": type(e).__name__,
+                    "message": str(e),
                 }
             ),
             400,
@@ -56,12 +63,10 @@ def get_books_by_genres():
     except Exception as e:
         return (
             jsonify(
-                {
-                    "error": {
-                        "name": type(e).__name__,
-                        "message": str(e),
-                        "traceback": traceback.format_exc(),
-                    }
+                error={
+                    "name": type(e).__name__,
+                    "message": str(e),
+                    "traceback": traceback.format_exc(),
                 }
             ),
             500,
@@ -76,16 +81,25 @@ def get_books_by_authors():
     author_names = request.args.getlist("name[]")
     n_books = request.args.get("n_books", type=int, default=10)
     offset = request.args.get("offset", type=int, default=0)
-    print(author_names)
+
     if not author_names:
-        return jsonify({"error": "name is required"}), 400
+        return (
+            jsonify(
+                error={
+                    "name": "QueryParameterError",
+                    "message": "name is required",
+                }
+            ),
+            400,
+        )
 
     if n_books < 1:
-        return jsonify({"error": "Invalid value for n_books"}), 400
+        n_books = 10
 
     try:
-        return jsonify(author_search(author_names, n_books + offset, offset))
-    except IndexError as e:
+        totalResults, results = author_search(author_names, n_books + offset, offset)
+        return jsonify(totalResults=totalResults, results=results)
+    except (IndexError, ValueError) as e:
         return (
             jsonify(
                 {
@@ -125,22 +139,33 @@ def get_books_by_name():
     if offset >= books.shape[0] or offset < 0:
         return (
             jsonify(
-                {"error": "Invalid offset. Audiobooks could not be found"},
+                error={
+                    "name": "QueryParameterError",
+                    "message": "Invalid offset. Audiobooks could not be found",
+                },
             ),
             400,
         )
 
     if n_books < 1:
-        return jsonify({"error": "Invalid value for n_books"}), 400
+        n_books = 10
 
     if not (book_name or book_id):
-        return jsonify({"error": "either name or id is required"}), 400
+        return (
+            jsonify(
+                error={
+                    "name": "QueryParameterError",
+                    "message": "either name or id is required",
+                }
+            ),
+            400,
+        )
 
     try:
         if book_id:
-            results = book_search(book_id, n_books + offset, offset)
+            totalResults, results = book_search(book_id, n_books + offset, offset)
         elif book_name:
-            results = book_search(book_name, n_books + offset, offset)
+            totalResults, results = book_search(book_name, n_books + offset, offset)
 
         less_similar = []
         more_similar = []
@@ -153,9 +178,13 @@ def get_books_by_name():
                 # less_similar.append([books._id[x[2]], x[0]])
                 less_similar.append(books._id[x[2]])
 
-        return jsonify({"moreSimilar": more_similar, "lessSimilar": less_similar})
+        return jsonify(
+            totalResults=totalResults,
+            moreSimilar=more_similar,
+            lessSimilar=less_similar,
+        )
 
-    except ValueError as e:
+    except (IndexError, ValueError) as e:
         return (
             jsonify(
                 {
@@ -191,11 +220,16 @@ def get_recommendations():
     book_id = request.args.get("id", type=int)
     offset = request.args.get("offset", default=0, type=int)
     n_recs = request.args.get("n_recs", default=10, type=int)
-    print(book_title)
+
     if offset >= books.shape[0] or offset < 0:
         return (
             jsonify(
-                {"error": "Invalid offset.\nUnable to generate recommendations."},
+                {
+                    "error": {
+                        "name": "IndexError",
+                        "message": "offset not valid",
+                    }
+                }
             ),
             400,
         )
@@ -204,7 +238,15 @@ def get_recommendations():
         n_recs = 10
 
     if not (book_title or book_id):
-        return jsonify({"error": "either name or id is required"}), 400
+        return (
+            jsonify(
+                error={
+                    "name": "QueryParameterError",
+                    "message": "either name or id is required",
+                }
+            ),
+            400,
+        )
 
     try:
         if book_id:
@@ -212,9 +254,9 @@ def get_recommendations():
         else:
             recs = recommender(book_title, n_recs + offset, offset)
 
-        return jsonify(recs), 200
+        return jsonify(totalResults=books.shape[0], recommendations=recs), 200
 
-    except ValueError as e:
+    except (IndexError, ValueError) as e:
         return (
             jsonify(
                 {

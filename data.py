@@ -2,8 +2,10 @@ import numpy as np
 import pandas as pd
 import os
 from pathlib import Path
+import re
 
 project_folder = Path(__file__).parent.resolve()
+
 
 def load_recommendation_engine(path=None):
     """
@@ -13,16 +15,21 @@ def load_recommendation_engine(path=None):
     :return: Tuple containing cosine similarities and book dataframe.
     """
     if not os.path.exists(path):
-        raise FileNotFoundError(f"{path} not exists")
-    
+        raise FileNotFoundError(f"{path} does not exist")
+
     with np.load(path, allow_pickle=True) as npz:
         return npz["cos_sims"], pd.DataFrame(
             npz["books"],
             columns=["_id", "title", "authors", "genres", "language"],
         )
 
+
 cos_sims, books = load_recommendation_engine(
     os.path.join(
-        project_folder, "recommendation_engine_data", "recommender_engine.npz"
+        project_folder,
+        "__pycache__",
+        "recommender_engine.npz",
     )
 )
+
+books["new_title"] = books["title"].apply(lambda x: re.sub(r"'s|,", "", x))
